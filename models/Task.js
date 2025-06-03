@@ -14,10 +14,20 @@ class Task {
     const result = await query(
       `SELECT t.*, c.name as category_name 
        FROM tasks t LEFT JOIN categories c ON t.category_id = c.id 
-       WHERE t.user_id = $1`,
+       WHERE t.user_id = $1 ORDER BY t.id DESC`,
       [userId]
     );
     return result.rows;
+  }
+
+  static async findById(id) {
+    const result = await query(
+      `SELECT t.*, c.name as category_name 
+       FROM tasks t LEFT JOIN categories c ON t.category_id = c.id 
+       WHERE t.id = $1`,
+      [id]
+    );
+    return result.rows[0];
   }
 
   static async update(id, { title, description, status, category_id }) {

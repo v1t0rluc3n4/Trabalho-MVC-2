@@ -1,0 +1,126 @@
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>
+                    Editar Tarefa
+                </h4>
+            </div>
+            <div class="card-body">
+                <form id="editTaskForm" action="/tasks/<%= task.id %>?_method=PUT" method="POST">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">
+                            Título <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               value="<%= task.title %>" required>
+                        <div class="invalid-feedback">
+                            Por favor, digite um título para a tarefa.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" 
+                                  placeholder="Descreva os detalhes da tarefa..."><%= task.description || '' %></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="pendente" <%= task.status === 'pendente' ? 'selected' : '' %>>Pendente</option>
+                            <option value="em_andamento" <%= task.status === 'em_andamento' ? 'selected' : '' %>>Em Andamento</option>
+                            <option value="concluida" <%= task.status === 'concluida' ? 'selected' : '' %>>Concluída</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="category_id" class="form-label">Categoria</label>
+                        <select class="form-select" id="category_id" name="category_id">
+                            <option value="">Selecione uma categoria</option>
+                            <% categories.forEach(category => { %>
+                                <option value="<%= category.id %>" <%= task.category_id == category.id ? 'selected' : '' %>>
+                                    <%= category.name %>
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="/tasks" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Voltar
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save me-1"></i>
+                            Atualizar Tarefa
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validação do formulário
+document.getElementById('editTaskForm').addEventListener('submit', function(e) {
+    const title = document.getElementById('title');
+    
+    if (!title.value.trim()) {
+        e.preventDefault();
+        title.classList.add('is-invalid');
+        title.focus();
+        return false;
+    }
+    
+    title.classList.remove('is-invalid');
+    title.classList.add('is-valid');
+});
+
+// Remover classe de erro quando o usuário começar a digitar
+document.getElementById('title').addEventListener('input', function() {
+    this.classList.remove('is-invalid');
+    if (this.value.trim()) {
+        this.classList.add('is-valid');
+    } else {
+        this.classList.remove('is-valid');
+    }
+});
+
+// Alternativa com fetch API (descomente para usar AJAX)
+/*
+document.getElementById('editTaskForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {
+        title: formData.get('title'),
+        description: formData.get('description'),
+        status: formData.get('status'),
+        category_id: formData.get('category_id') || null
+    };
+    
+    try {
+        const response = await fetch(`/tasks/api/<%= task.id %>`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            window.location.href = '/tasks';
+        } else {
+            const error = await response.json();
+            alert('Erro ao atualizar tarefa: ' + error.message);
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao atualizar tarefa');
+    }
+});
+*/
+</script>

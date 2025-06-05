@@ -1,53 +1,63 @@
-const { query } = require('../config/database');
+const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+const logger = require('../utils/logger');
 
-class Task {
-  static async create({ title, description, status, user_id, category_id }) {
-    const result = await query(
-      `INSERT INTO tasks (title, description, status, user_id, category_id) 
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [title, description, status, user_id, category_id]
-    );
-    return result.rows[0];
-  }
+class Task extends Model {}
 
-  static async findByUser(userId) {
-    const result = await query(
-      `SELECT t.*, c.name as category_name 
-       FROM tasks t LEFT JOIN categories c ON t.category_id = c.id 
-       WHERE t.user_id = $1 ORDER BY t.id DESC`,
-      [userId]
-    );
-    return result.rows;
+Task.init({
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: 'Title is required'
+      },
+      len: {
+        args: [3, 100],
+        msg: 'Title must be between 3 and 100 characters'
+      }
+    }
+  },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  status: {
+    type: DataTypes.ENUM('pending', 'in_progress', 'completed'),
+    defaultValue: 'pending',
+    allowNull: false
+  },
+  priority: {
+    type: DataTypes.ENUM('low', 'medium', 'high'),
+    defaultValue: 'medium',
+    allowNull: false
+  },
+  dueDate: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    validate: {
+      isDate: {
+        msg: 'Invalid date format'
+      },
+      isAfter: {
+        args: new Date().toISOString(),
+        msg: 'Due date must be in the future'
+      }
+    }
   }
-
-  static async findById(id) {
-    const result = await query(
-      `SELECT t.*, c.name as category_name 
-       FROM tasks t LEFT JOIN categories c ON t.category_id = c.id 
-       WHERE t.id = $1`,
-      [id]
-    );
-    return result.rows[0];
+}, {
+  sequelize,
+  modelName: 'task',
+  timestamps: true,
+  paranoid: true, // Soft delete
+  defaultScope: {
+    attributes: { exclude: ['deletedAt'] }
   }
-
-  static async update(id, { title, description, status, category_id }) {
-    const result = await query(
-      `UPDATE tasks SET 
-        title = $1, 
-        description = $2, 
-        status = $3, 
-        category_id = $4,
-        updated_at = NOW()
-       WHERE id = $5 RETURNING *`,
-      [title, description, status, category_id, id]
-    );
-    return result.rows[0];
-  }
-
-  static async delete(id) {
-    const result = await query('DELETE FROM tasks WHERE id = $1 RETURNING *', [id]);
-    return result.rows[0];
-  }
-}
+});
 
 module.exports = Task;

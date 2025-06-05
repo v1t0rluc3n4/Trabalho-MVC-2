@@ -1,0 +1,20 @@
+<%- layout('layouts/main') %>
+<% pageScripts = ['/js/tasks.js'] %>
+
+<h1>Create Task</h1>
+<form id="task-form">
+  <input type="text" name="title" placeholder="Task Title" required>
+  <textarea name="description" placeholder="Description"></textarea>
+  <select name="status" required>
+    <option value="pending">Pending</option>
+    <option value="in_progress">In Progress</option>
+    <option value="completed">Completed</option>
+  </select>
+  <select name="priority" required>
+    <option value="low">Low</option>
+    <option value="medium">Medium</option>
+    <option value="high">High</option>
+  </select>
+  <input type="date" name="dueDate">
+  <button type="submit">Create Task</button>
+</form>

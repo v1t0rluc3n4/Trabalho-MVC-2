@@ -1,0 +1,13 @@
+<%- layout('layouts/main') %>
+<% pageScripts = ['/js/tasks.js'] %>
+
+<h1><%= task.title %></h1>
+<p><strong>Description:</strong> <%= task.description || 'N/A' %></p>
+<p><strong>Status:</strong> <%= task.status %></p>
+<p><strong>Priority:</strong> <%= task.priority %></p>
+<p><strong>Due Date:</strong> <%= task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A' %></p>
+<a href="/tasks/<%= task.id %>/edit">Edit</a>
+<form action="/tasks/<%= task.id %>?_method=DELETE" method="POST" style="display:inline;">
+  <button type="submit">Delete</button>
+</form>
+<a href="/tasks">Back to Tasks</a>

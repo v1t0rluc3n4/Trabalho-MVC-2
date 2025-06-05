@@ -1,43 +1,56 @@
+// server.js
+require('dotenv').config();
 const express = require('express');
-const dotenv = require('dotenv');
 const path = require('path');
 const methodOverride = require('method-override');
-
-dotenv.config();
+const session = require('express-session');
+const flash = require('connect-flash');
+const logger = require('./utils/logger');
+const securityMiddleware = require('./config/security');
+const { sessionConfig } = require('./config/session');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Configuração do EJS
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+// Database connection
+require('./config/database');
+require('./models');
 
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(session(sessionConfig)); // Use config/session.js
+app.use(flash());
 
-// Rotas
-const homeRoutes = require('./routes/index');
-const taskRoutes = require('./routes/taskroutes');
+// Security
+securityMiddleware(app);
 
-app.use('/', homeRoutes);
-app.use('/tasks', taskRoutes);
+// View engine setup
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
-// Middleware de tratamento de erros
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).render('error', { message: 'Algo deu errado!' });
+// Global variables
+app.use((req, res, next) => {
+  res.locals.success = req.flash('success');
+  res.locals.error = req.flash('error');
+  res.locals.currentUser = req.user || null;
+  next();
 });
 
-// Rota 404
-app.use((req, res) => {
-  res.status(404).render('error', { message: 'Página não encontrada' });
-});
+// Routes
+app.use('/', require('./routes/web/auth'));
+app.use('/tasks', require('./routes/web/tasks'));
+app.use('/api/auth', require('./routes/api/auth'));
+app.use('/api/tasks', require('./routes/api/tasks'));
 
+// Error handling
+const errorHandler = require('./middlewares/errorHandler');
+app.use(errorHandler);
+
+// Start server
+const PORT = process.env.APP_PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+  logger.info(`Server running on port ${PORT}`);
+  logger.info(`Environment: ${process.env.APP_ENV}`);
 });
-
-module.exports = app;

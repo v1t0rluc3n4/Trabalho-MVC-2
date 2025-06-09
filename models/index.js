@@ -5,12 +5,10 @@ const path = require('path');
 const Sequelize = require('sequelize');
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
-const config = require('../config/config.js')[env];
 const db = {};
 
-let sequelize;
 // Configuração explícita para SQLite
-sequelize = new Sequelize({
+const sequelize = new Sequelize({
   dialect: 'sqlite',
   storage: './database.sqlite',
   logging: false
@@ -26,8 +24,20 @@ fs
     );
   })
   .forEach(file => {
-    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
-    db[model.name] = model;
+    try {
+      // Modificado para lidar com modelos ES6 Class e CommonJS
+      const model = require(path.join(__dirname, file));
+      // Verifica se o modelo é uma função (estilo antigo) ou uma classe (ES6)
+      if (typeof model === 'function') {
+        const modelInstance = model(sequelize, Sequelize.DataTypes);
+        db[modelInstance.name] = modelInstance;
+      } else {
+        // Se for um módulo ES6, assume que exporta a classe diretamente
+        db[model.name] = model;
+      }
+    } catch (error) {
+      console.error(`Error loading model ${file}:`, error);
+    }
   });
 
 Object.keys(db).forEach(modelName => {

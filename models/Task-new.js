@@ -5,7 +5,9 @@ module.exports = (sequelize, DataTypes) => {
   class Task extends Model {
     static associate(models) {
       // define association here
-      Task.belongsTo(models.user, { foreignKey: 'userId' });
+      if (models.user) {
+        Task.belongsTo(models.user, { foreignKey: 'userId' });
+      }
     }
   }
   
@@ -44,4 +46,4 @@ module.exports = (sequelize, DataTypes) => {
   });
   
   return Task;
-module.exports = Task;
+};

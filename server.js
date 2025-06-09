@@ -11,30 +11,34 @@ const { sessionConfig } = require('./config/session');
 
 const app = express();
 
-// Database connection
-require('./config/database');
-require('./models');
+// Database connection - USANDO EXPLICITAMENTE SQLITE
+const sequelize = require('./config/sqlite-database');
 
-// Middlewares
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(methodOverride('_method'));
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(session(sessionConfig)); // Use config/session.js
-app.use(flash());
+// Teste a conexão
+sequelize.authenticate()
+  .then(() => console.log('Database connection established successfully.'))
+  .catch(err => console.error('Unable to connect to the database:', err));
 
-// Security
-securityMiddleware(app);
-
-// View engine setup
+// Configurações do Express
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(methodOverride('_method'));
 
-// Global variables
+// Segurança
+securityMiddleware(app);
+
+// Sessão e Flash Messages
+app.use(session(sessionConfig));
+app.use(flash());
+
+// Middleware global para flash messages
 app.use((req, res, next) => {
   res.locals.success = req.flash('success');
   res.locals.error = req.flash('error');
-  res.locals.currentUser = req.user || null;
+  res.locals.user = req.session.user || null;
   next();
 });
 
@@ -54,3 +58,7 @@ app.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);
   logger.info(`Environment: ${process.env.APP_ENV}`);
 });
+
+
+
+

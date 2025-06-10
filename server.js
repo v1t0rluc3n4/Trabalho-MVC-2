@@ -10,18 +10,23 @@ const securityMiddleware = require('./config/security');
 
 const app = express();
 
-// Database connection - usando o arquivo gerado pelo Sequelize CLI
+// Database connection
 const db = require('./models');
 const sequelize = db.sequelize;
 
 // Teste a conexão
 sequelize.authenticate()
   .then(() => {
-    console.log('Database connection established successfully.');
+    logger.info('Database connection established successfully.');
+    // Sincronizar modelos com o banco de dados
+    return sequelize.sync({ alter: true });
+  })
+  .then(() => {
+    logger.info('Database synchronized successfully.');
     startServer();
   })
   .catch(err => {
-    console.error('Unable to connect to the database:', err);
+    logger.error('Unable to connect to the database:', err);
     // Continue mesmo com erro de conexão
     startServer();
   });
@@ -44,6 +49,9 @@ function startServer() {
     tableName: 'sessions'
   });
   
+  // Sincronizar a tabela de sessões
+  sessionStore.sync();
+  
   app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key',
     store: sessionStore,
@@ -63,12 +71,14 @@ function startServer() {
 
   // Rota básica para teste
   app.get('/', (req, res) => {
-    res.send('Servidor funcionando com SQLite!');
+    res.send('Servidor funcionando com Supabase PostgreSQL!');
   });
 
   // Error handling
-  const errorHandler = require('./middlewares/errorHandler');
-  app.use(errorHandler);
+  app.use((err, req, res, next) => {
+    logger.error(err.stack);
+    res.status(500).send('Algo deu errado!');
+  });
 
   // Start server
   const PORT = process.env.APP_PORT || 3000;
@@ -77,6 +87,8 @@ function startServer() {
     logger.info(`Environment: ${process.env.APP_ENV}`);
   });
 }
+
+
 
 
 

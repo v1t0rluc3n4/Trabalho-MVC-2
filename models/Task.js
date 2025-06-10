@@ -5,7 +5,9 @@ module.exports = (sequelize, DataTypes) => {
   class Task extends Model {
     static associate(models) {
       // define association here
-      Task.belongsTo(models.user, { foreignKey: 'userId' });
+      if (models.User) {
+        Task.belongsTo(models.User, { foreignKey: 'userId' });
+      }
     }
   }
   
@@ -35,11 +37,12 @@ module.exports = (sequelize, DataTypes) => {
     },
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: true
     }
   }, {
     sequelize,
-    modelName: 'task',
+    modelName: 'Task',
+    tableName: 'tasks',
     paranoid: true // Soft delete
   });
   

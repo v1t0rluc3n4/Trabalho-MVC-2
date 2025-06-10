@@ -1,10 +1,21 @@
 const { Sequelize } = require('sequelize');
 const logger = require('../utils/logger');
+require('dotenv').config();
 
-// Configuração explícita para SQLite
+// Configuração para PostgreSQL (Supabase)
 const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: './database.sqlite',
+  dialect: 'postgres',
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT || 5432,
+  username: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME || 'postgres',
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false
+    }
+  },
   logging: msg => logger.debug(msg)
 });
 
@@ -22,6 +33,7 @@ const testConnection = async () => {
 testConnection();
 
 module.exports = sequelize;
+
 
 
 

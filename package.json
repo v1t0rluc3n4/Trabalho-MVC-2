@@ -26,7 +26,6 @@
     "pg": "^8.8.0",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.28.0",
-    "sqlite3": "^5.1.7",
     "winston": "^3.8.2"
   },
   "devDependencies": {
@@ -34,3 +33,4 @@
     "sequelize-cli": "^6.5.2"
   }
 }
+

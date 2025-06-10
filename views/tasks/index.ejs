@@ -45,7 +45,7 @@
         </div>
       <% } else { %>
         <% tasks.forEach(task => { %>
-          <div class="task-card fade-in" style="border-left-color: <%= task.priority === 'alta' ? '#f56565' : task.priority === 'media' ? '#ed8936' : '#38b2ac' %>">
+          <div class="task-card fade-in" style="border-left-color: var(--<%= task.priority %>-color)">
             <div class="task-header">
               <div>
                 <h3 class="task-title"><%= task.title %></h3>

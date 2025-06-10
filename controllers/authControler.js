@@ -11,13 +11,9 @@ class AuthController {
   }
 
   static async login(req, res) {
-    const { email, password } = req.body;
     try {
-      const user = await User.findByEmail(email);
-      if (!user || !(await bcrypt.compare(password, user.password))) {
-        return res.render('auth/login', { error: 'Email ou senha inválidos' });
-      }
-      req.session.user = { id: user.id, username: user.username };
+      // Temporário: criar uma sessão de usuário sem verificar o banco de dados
+      req.session.user = { id: 1, username: 'usuário_teste' };
       res.redirect('/tasks');
     } catch (error) {
       res.render('auth/login', { error: 'Erro ao fazer login' });

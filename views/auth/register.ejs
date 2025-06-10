@@ -1,11 +1,31 @@
-<%- layout('layouts/main') %>
-<% pageScripts = ['/js/auth.js'] %>
-
-<h1>Register</h1>
-<form id="register-form">
-  <input type="text" id="name" name="name" placeholder="Name" required>
-  <input type="email" id="email" name="email" placeholder="Email" required>
-  <input type="password" id="password" name="password" placeholder="Password" required>
-  <button type="submit">Register</button>
-</form>
-<p>Already have an account? <a href="/login">Login</a></p>
+<% layout('layouts/main') %>
+<div class="auth-container">
+  <div class="auth-card fade-in" role="region" aria-labelledby="auth-title">
+    <div class="auth-title" id="auth-title">
+      <i class="fas fa-tasks"></i> Task Manager Pro
+    </div>
+    <% if (error) { %>
+      <div class="alert alert-error show"><%= error %></div>
+    <% } %>
+    <form action="/auth/register" method="POST" aria-labelledby="auth-title">
+      <div class="form-group">
+        <label class="form-label" for="username">Nome de usuário</label>
+        <input type="text" class="form-input" id="username" name="username" required aria-required="true">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="email">Email</label>
+        <input type="email" class="form-input" id="email" name="email" required aria-required="true">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Senha</label>
+        <input type="password" class="form-input" id="password" name="password" required aria-required="true">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 15px;">
+        <i class="fas fa-user-plus"></i> Cadastrar
+      </button>
+      <p style="text-align: center; color: var(--text-light);">
+        Já tem conta? <a href="/auth/login" style="color: var(--primary);">Faça login</a>
+      </p>
+    </form>
+  </div>
+</div>

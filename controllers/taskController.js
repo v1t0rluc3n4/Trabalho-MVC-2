@@ -1,102 +1,82 @@
-const { Task, User } = require('../models');
-const logger = require('../utils/logger');
-const ApiError = require('../utils/ApiError');
-const httpStatus = require('http-status');
+const Task = require('../models/Task');
 
 class TaskController {
-  async getAllTasks(req, res, next) {
+  static async index(req, res) {
+    if (!req.session.user) return res.redirect('/auth/login');
+    const { status, priority, sort } = req.query;
     try {
-      const tasks = await Task.findAll({
-        where: { userId: req.user.id },
-        order: [
-          ['priority', 'DESC'],
-          ['dueDate', 'ASC']
-        ]
-      });
-      res.json(tasks);
+      const tasks = await Task.findByUserId(req.session.user.id, { status, priority, sort });
+      const stats = await Task.getStats(req.session.user.id);
+      res.render('tasks/index', { tasks, stats, user: req.session.user });
     } catch (error) {
-      logger.error('Error fetching tasks:', error);
-      next(new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Error fetching tasks'));
+      res.render('tasks/index', { tasks: [], stats: {}, error: 'Erro ao carregar tarefas' });
     }
   }
 
-  async getTaskById(req, res, next) {
-    try {
-      const task = await Task.findOne({
-        where: {
-          id: req.params.id,
-          userId: req.user.id
-        }
-      });
-
-      if (!task) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'Task not found');
-      }
-
-      res.json(task);
-    } catch (error) {
-      next(error);
-    }
+  static showCreate(req, res) {
+    if (!req.session.user) return res.redirect('/auth/login');
+    res.render('tasks/create', { error: null });
   }
 
-  async createTask(req, res, next) {
+  static async create(req, res) {
+    if (!req.session.user) return res.redirect('/auth/login');
+    const { title, description, status, priority, due_date } = req.body;
     try {
-      const { title, description, status, priority, dueDate } = req.body;
-
-      const task = await Task.create({
+      await Task.create({
+        user_id: req.session.user.id,
         title,
         description,
         status,
         priority,
-        dueDate,
-        userId: req.user.id
+        due_date,
       });
-
-      res.status(httpStatus.CREATED).json(task);
+      res.redirect('/tasks');
     } catch (error) {
-      next(new ApiError(httpStatus.BAD_REQUEST, 'Error creating task', error.errors));
+      res.render('tasks/create', { error: 'Erro ao criar tarefa' });
     }
   }
 
-  async updateTask(req, res, next) {
+  static async showEdit(req, res) {
+    if (!req.session.user) return res.redirect('/auth/login');
     try {
-      const task = await Task.findOne({
-        where: {
-          id: req.params.id,
-          userId: req.user.id
-        }
-      });
-
-      if (!task) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'Task not found');
+      const task = await Task.findById(req.params.id);
+      if (!task || task.user_id !== req.session.user.id) {
+        return res.redirect('/tasks');
       }
-
-      const updatedTask = await task.update(req.body);
-      res.json(updatedTask);
+      res.render('tasks/edit', { task, error: null });
     } catch (error) {
-      next(error);
+      res.redirect('/tasks');
     }
   }
 
-  async deleteTask(req, res, next) {
+  static async update(req, res) {
+    if (!req.session.user) return res.redirect('/auth/login');
+    const { title, description, status, priority, due_date } = req.body;
     try {
-      const task = await Task.findOne({
-        where: {
-          id: req.params.id,
-          userId: req.user.id
-        }
-      });
-
-      if (!task) {
-        throw new ApiError(httpStatus.NOT_FOUND, 'Task not found');
+      const task = await Task.findById(req.params.id);
+      if (!task || task.user_id !== req.session.user.id) {
+        return res.redirect('/tasks');
       }
-
-      await task.destroy();
-      res.status(httpStatus.NO_CONTENT).send();
+      await Task.update(req.params.id, { title, description, status, priority, due_date });
+      res.redirect('/tasks');
     } catch (error) {
-      next(error);
+      res.render('tasks/edit', { task: req.body, error: 'Erro ao atualizar tarefa' });
+    }
+  }
+
+  static async delete(req, res) {
+    if (!req.session.user) return res.redirect('/auth/login');
+    try {
+      const task = await Task.findById(req.params.id);
+      if (!task || task.user_id !== req.session.user.id) {
+        return res.redirect('/tasks');
+      }
+      await Task.delete(req.params.id);
+      res.redirect('/tasks');
+    } catch (error) {
+      res.redirect('/tasks');
     }
   }
 }
 
-module.exports = new TaskController();
+module.exports = TaskController;

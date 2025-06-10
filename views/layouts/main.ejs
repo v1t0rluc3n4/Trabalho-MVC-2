@@ -1,24 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-  <%- include('../partials/head') %>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Task Manager Pro - Organize suas tarefas de forma eficiente">
+  <title>Task Manager Pro</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
 </head>
 <body>
-  <header>
+  <% if (typeof user !== 'undefined' && user) { %>
     <%- include('../partials/header') %>
-  </header>
-  <div class="container">
-    <%- include('../partials/flash') %>
+    <div class="container">
+      <div class="dashboard">
+        <%- include('../partials/sidebar') %>
+        <main class="main-content">
+          <%- body %>
+        </main>
+      </div>
+    </div>
+  <% } else { %>
     <%- body %>
-  </div>
-  <footer>
-    <%- include('../partials/footer') %>
-  </footer>
-  <script src="/js/main.js"></script>
-  <% if (typeof pageScripts !== 'undefined') { %>
-    <% pageScripts.forEach(script => { %>
-      <script src="<%= script %>"></script>
-    <% }); %>
   <% } %>
+  <script src="/js/scripts.js"></script>
 </body>
 </html>

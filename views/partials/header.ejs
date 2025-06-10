@@ -1,10 +1,16 @@
-<nav>
-  <a href="/">Home</a>
-  <% if (currentUser) { %>
-    <a href="/tasks">Tasks</a>
-    <a href="/logout">Logout</a>
-  <% } else { %>
-    <a href="/login">Login</a>
-    <a href="/register">Register</a>
-  <% } %>
-</nav>
+<header class="header" role="banner">
+  <div class="logo">
+    <i class="fas fa-tasks"></i> Task Manager Pro
+  </div>
+  <div class="user-info">
+    <div class="avatar" id="userAvatar" aria-label="Avatar do usuário"><%= user.username.charAt(0).toUpperCase() %></div>
+    <span id="userName" aria-live="polite"><%= user.username %></span>
+    <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema">
+      <i class="fas fa-sun"></i>
+      <i class="fas fa-moon"></i>
+    </button>
+    <a href="/auth/logout" class="btn btn-secondary">
+      <i class="fas fa-sign-out-alt"></i> Sair
+    </a>
+  </div>
+</header>

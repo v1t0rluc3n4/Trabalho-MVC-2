@@ -1,0 +1,24 @@
+<% layout('layouts/main') %>
+<div class="main-content">
+  <h2>Perfil do Usuário</h2>
+  <% if (error) { %>
+    <div class="alert alert-error show"><%= error %></div>
+  <% } %>
+  <% if (success) { %>
+    <div class="alert alert-success show"><%= success %></div>
+  <% } %>
+  <form action="/user/profile" method="POST">
+    <div class="form-group">
+      <label class="form-label" for="username">Nome de Usuário</label>
+      <input type="text" class="form-input" id="username" name="username" value="<%= user.username %>" required aria-required="true">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="email">Email</label>
+      <input type="email" class="form-input" id="email" name="email" value="<%= user.email %>" required aria-required="true">
+    </div>
+    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+      <a href="/tasks" class="btn btn-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-primary">Salvar</button>
+    </div>
+  </form>
+</div>

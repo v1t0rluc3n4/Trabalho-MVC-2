@@ -1,20 +1,46 @@
-<%- layout('layouts/main') %>
-<% pageScripts = ['/js/tasks.js'] %>
-
-<h1>Edit Task</h1>
-<form id="task-form" action="/tasks/<%= task.id %>?_method=PUT" method="POST">
-  <input type="text" name="title" value="<%= task.title %>" required>
-  <textarea name="description"><%= task.description || '' %></textarea>
-  <select name="status" required>
-    <option value="pending" <%= task.status === 'pending' ? 'selected' : '' %>>Pending</option>
-    <option value="in_progress" <%= task.status === 'in_progress' ? 'selected' : '' %>>In Progress</option>
-    <option value="completed" <%= task.status === 'completed' ? 'selected' : '' %>>Completed</option>
-  </select>
-  <select name="priority" required>
-    <option value="low" <%= task.priority === 'low' ? 'selected' : '' %>>Low</option>
-    <option value="medium" <%= task.priority === 'medium' ? 'selected' : '' %>>Medium</option>
-    <option value="high" <%= task.priority === 'high' ? 'selected' : '' %>>High</option>
-  </select>
-  <input type="date" name="dueDate" value="<%= task.dueDate ? task.dueDate.toISOString().split('T')[0] : '' %>">
-  <button type="submit">Update Task</button>
-</form>
+<% layout('layouts/main') %>
+<div id="taskModal" class="modal active" role="dialog" aria-labelledby="modalTitle">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalTitle">Editar Tarefa</h3>
+      <a href="/tasks" class="close-btn" aria-label="Fechar modal">×</a>
+    </div>
+    <% if (error) { %>
+      <div class="alert alert-error show"><%= error %></div>
+    <% } %>
+    <form action="/tasks/edit/<%= task.id %>" method="POST" aria-labelledby="modalTitle">
+      <div class="form-group">
+        <label class="form-label" for="title">Título</label>
+        <input type="text" class="form-input" id="title" name="title" value="<%= task.title %>" required aria-required="true">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="description">Descrição</label>
+        <textarea class="form-textarea" id="description" name="description"><%= task.description || '' %></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="status">Status</label>
+        <select class="form-select" id="status" name="status" required aria-required="true">
+          <option value="pendente" <%= task.status === 'pendente' ? 'selected' : '' %>>Pendente</option>
+          <option value="em_andamento" <%= task.status === 'em_andamento' ? 'selected' : '' %>>Em Andamento</option>
+          <option value="concluida" <%= task.status === 'concluida' ? 'selected' : '' %>>Concluída</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="priority">Prioridade</label>
+        <select class="form-select" id="priority" name="priority" required aria-required="true">
+          <option value="baixa" <%= task.priority === 'baixa' ? 'selected' : '' %>>Baixa</option>
+          <option value="media" <%= task.priority === 'media' ? 'selected' : '' %>>Média</option>
+          <option value="alta" <%= task.priority === 'alta' ? 'selected' : '' %>>Alta</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="due_date">Prazo</label>
+        <input type="date" class="form-input" id="due_date" name="due_date" value="<%= task.due_date ? new Date(task.due_date).toISOString().split('T')[0] : '' %>">
+      </div>
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <a href="/tasks" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>

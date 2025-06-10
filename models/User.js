@@ -1,47 +1,30 @@
-'use strict';
-const { Model } = require('sequelize');
+const pool = require('../config/database');
+const bcrypt = require('bcrypt');
 
-module.exports = (sequelize, DataTypes) => {
-  class User extends Model {
-    static associate(models) {
-      // define association here
-      if (models.Task) {
-        User.hasMany(models.Task, { foreignKey: 'userId' });
-      }
-    }
+class User {
+  static async create({ username, email, password }) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const query = `
+      INSERT INTO users (username, email, password)
+      VALUES ($1, $2, $3)
+      RETURNING id, username, email, created_at, updated_at
+    `;
+    const values = [username, email, hashedPassword];
+    const result = await pool.query(query, values);
+    return result.rows[0];
   }
-  
-  User.init({
-    username: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-      validate: {
-        notEmpty: true
-      }
-    },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-      validate: {
-        isEmail: true
-      }
-    },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    role: {
-      type: DataTypes.ENUM('user', 'admin'),
-      defaultValue: 'user'
-    }
-  }, {
-    sequelize,
-    modelName: 'User',
-    tableName: 'users',
-    paranoid: true // Soft delete
-  });
-  
-  return User;
+
+  static async findByEmail(email) {
+    const query = 'SELECT * FROM users WHERE email = $1';
+    const result = await pool.query(query, [email]);
+    return result.rows[0];
+  }
+
+  static async findById(id) {
+    const query = 'SELECT * FROM users WHERE id = $1';
+    const result = await pool.query(query, [id]);
+    return result.rows[0];
+  }
+}
+
 module.exports = User;

@@ -1,20 +1,46 @@
-<%- layout('layouts/main') %>
-<% pageScripts = ['/js/tasks.js'] %>
-
-<h1>Create Task</h1>
-<form id="task-form">
-  <input type="text" name="title" placeholder="Task Title" required>
-  <textarea name="description" placeholder="Description"></textarea>
-  <select name="status" required>
-    <option value="pending">Pending</option>
-    <option value="in_progress">In Progress</option>
-    <option value="completed">Completed</option>
-  </select>
-  <select name="priority" required>
-    <option value="low">Low</option>
-    <option value="medium">Medium</option>
-    <option value="high">High</option>
-  </select>
-  <input type="date" name="dueDate">
-  <button type="submit">Create Task</button>
-</form>
+<% layout('layouts/main') %>
+<div id="taskModal" class="modal active" role="dialog" aria-labelledby="modalTitle">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalTitle">Nova Tarefa</h3>
+      <a href="/tasks" class="close-btn" aria-label="Fechar modal">×</a>
+    </div>
+    <% if (error) { %>
+      <div class="alert alert-error show"><%= error %></div>
+    <% } %>
+    <form action="/tasks/create" method="POST" aria-labelledby="modalTitle">
+      <div class="form-group">
+        <label class="form-label" for="title">Título</label>
+        <input type="text" class="form-input" id="title" name="title" required aria-required="true">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="description">Descrição</label>
+        <textarea class="form-textarea" id="description" name="description"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="status">Status</label>
+        <select class="form-select" id="status" name="status" required aria-required="true">
+          <option value="pendente">Pendente</option>
+          <option value="em_andamento">Em Andamento</option>
+          <option value="concluida">Concluída</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="priority">Prioridade</label>
+        <select class="form-select" id="priority" name="priority" required aria-required="true">
+          <option value="baixa">Baixa</option>
+          <option value="media">Média</option>
+          <option value="alta">Alta</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="due_date">Prazo</label>
+        <input type="date" class="form-input" id="due_date" name="due_date">
+      </div>
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <a href="/tasks" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>

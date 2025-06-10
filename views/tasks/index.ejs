@@ -1,8 +1,101 @@
-<%- layout('layouts/main') %>
-<% pageScripts = ['/js/tasks.js'] %>
-
-<h1>My Tasks</h1>
-<a href="/tasks/create">Create New Task</a>
-<ul id="task-list" class="task-list">
-  <!-- Tasks will be populated by JavaScript -->
-</ul>
+<% layout('layouts/main') %>
+<% if (typeof error !== 'undefined' && error) { %>
+  <div class="alert alert-error show"><%= error %></div>
+<% } %>
+<% if (typeof activeView === 'undefined' || activeView === 'tasks') { %>
+  <div id="tasksView">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2>Minhas Tarefas</h2>
+    </div>
+    <div class="filters">
+      <div class="filter-group">
+        <label for="statusFilter">Status</label>
+        <select class="form-select" id="statusFilter" aria-label="Filtrar por status">
+          <option value="">Todos</option>
+          <option value="pendente" <%= status === 'pendente' ? 'selected' : '' %>>Pendente</option>
+          <option value="em_andamento" <%= status === 'em_andamento' ? 'selected' : '' %>>Em Andamento</option>
+          <option value="concluida" <%= status === 'concluida' ? 'selected' : '' %>>Concluída</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="priorityFilter">Prioridade</label>
+        <select class="form-select" id="priorityFilter" aria-label="Filtrar por prioridade">
+          <option value="">Todas</option>
+          <option value="alta" <%= priority === 'alta' ? 'selected' : '' %>>Alta</option>
+          <option value="media" <%= priority === 'media' ? 'selected' : '' %>>Média</option>
+          <option value="baixa" <%= priority === 'baixa' ? 'selected' : '' %>>Baixa</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="sortFilter">Ordenar por</label>
+        <select class="form-select" id="sortFilter" aria-label="Ordenar tarefas">
+          <option value="created_at" <%= sort === 'created_at' ? 'selected' : '' %>>Data de Criação</option>
+          <option value="due_date" <%= sort === 'due_date' ? 'selected' : '' %>>Prazo</option>
+          <option value="priority" <%= sort === 'priority' ? 'selected' : '' %>>Prioridade</option>
+          <option value="title" <%= sort === 'title' ? 'selected' : '' %>>Título</option>
+        </select>
+      </div>
+    </div>
+    <div class="task-grid" id="tasksList">
+      <% if (tasks.length === 0) { %>
+        <div style="text-align: center; padding: 40px; color: var(--text-light);">
+          <i class="fas fa-tasks" style="font-size: 48px; margin-bottom: 16px;"></i>
+          <p>Nenhuma tarefa encontrada</p>
+          <p>Clique em "Nova Tarefa" para começar</p>
+        </div>
+      <% } else { %>
+        <% tasks.forEach(task => { %>
+          <div class="task-card fade-in" style="border-left-color: <%= task.priority === 'alta' ? '#f56565' : task.priority === 'media' ? '#ed8936' : '#38b2ac' %>">
+            <div class="task-header">
+              <div>
+                <h3 class="task-title"><%= task.title %></h3>
+                <div class="task-meta">
+                  <span class="badge badge-<%= task.status %>"><%= task.status === 'pendente' ? 'Pendente' : task.status === 'em_andamento' ? 'Em Andamento' : 'Concluída' %></span>
+                  <span class="badge badge-<%= task.priority %>"><%= task.priority.charAt(0).toUpperCase() + task.priority.slice(1) %></span>
+                  <% if (task.due_date) { %>
+                    <span class="badge" style="background: #e2e8f0; color: #4a5568;">
+                      <i class="fas fa-calendar"></i> <%= new Date(task.due_date).toLocaleDateString('pt-BR') %>
+                    </span>
+                  <% } %>
+                </div>
+              </div>
+              <div class="task-actions">
+                <a href="/tasks/edit/<%= task.id %>" class="btn btn-secondary">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <a href="/tasks/delete/<%= task.id %>" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta tarefa?')">
+                  <i class="fas fa-trash"></i>
+                </a>
+              </div>
+            </div>
+            <% if (task.description) { %>
+              <p style="color: var(--text-light); margin-top: 10px;"><%= task.description %></p>
+            <% } %>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+  </div>
+<% } else { %>
+  <div id="statsView">
+    <h2 style="margin-bottom: 30px;">Estatísticas</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number"><%= stats.total || 0 %></div>
+        <div class="stat-label">Total de Tarefas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number"><%= stats.completed || 0 %></div>
+        <div class="stat-label">Concluídas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number"><%= stats.pending || 0 %></div>
+        <div class="stat-label">Pendentes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number"><%= stats.progress || 0 %></div>
+        <div class="stat-label">Em Andamento</div>
+      </div>
+    </div>
+  </div>
+<% } %>

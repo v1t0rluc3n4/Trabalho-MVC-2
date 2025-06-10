@@ -1,94 +1,53 @@
-// server.js
-require('dotenv').config();
 const express = require('express');
-const path = require('path');
-const methodOverride = require('method-override');
 const session = require('express-session');
-const flash = require('connect-flash');
-const logger = require('./utils/logger');
-const securityMiddleware = require('./config/security');
+const path = require('path');
+require('dotenv').config();
+const pool = require('./config/database'); // Importar conexão com o banco
+
+const authRoutes = require('./routes/authRoutes');
+const taskRoutes = require('./routes/taskRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
-// Database connection
-const db = require('./models');
-const sequelize = db.sequelize;
+// Configuração do EJS
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
-// Teste a conexão
-sequelize.authenticate()
-  .then(() => {
-    logger.info('Database connection established successfully.');
-    // Sincronizar modelos com o banco de dados
-    return sequelize.sync({ alter: true });
-  })
-  .then(() => {
-    logger.info('Database synchronized successfully.');
-    startServer();
-  })
-  .catch(err => {
-    logger.error('Unable to connect to the database:', err);
-    // Continue mesmo com erro de conexão
-    startServer();
-  });
-
-function startServer() {
-  // Configurações do Express
-  app.set('view engine', 'ejs');
-  app.set('views', path.join(__dirname, 'views'));
-  app.use(express.static(path.join(__dirname, 'public')));
-  app.use(express.urlencoded({ extended: true }));
-  app.use(express.json());
-  app.use(methodOverride('_method'));
-
-  // Segurança
-  securityMiddleware(app);
-
-  // Sessão e Flash Messages
-  const sessionStore = new (require('connect-session-sequelize')(session.Store))({
-    db: sequelize,
-    tableName: 'sessions'
-  });
-  
-  // Sincronizar a tabela de sessões
-  sessionStore.sync();
-  
-  app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
-    store: sessionStore,
+// Middlewares
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false
-  }));
-  
-  app.use(flash());
+    saveUninitialized: false,
+  })
+);
 
-  // Middleware global para flash messages
-  app.use((req, res, next) => {
-    res.locals.success = req.flash('success');
-    res.locals.error = req.flash('error');
-    res.locals.user = req.session.user || null;
-    next();
-  });
+// Rotas
+app.use('/auth', authRoutes);
+app.use('/tasks', taskRoutes);
+app.use('/user', userRoutes);
 
-  // Rota básica para teste
-  app.get('/', (req, res) => {
-    res.send('Servidor funcionando com Supabase PostgreSQL!');
-  });
+// Rota inicial
+app.get('/', (req, res) => {
+  if (req.session.user) {
+    res.redirect('/tasks');
+  } else {
+    res.redirect('/auth/login');
+  }
+});
 
-  // Error handling
-  app.use((err, req, res, next) => {
-    logger.error(err.stack);
-    res.status(500).send('Algo deu errado!');
-  });
+// Tratamento de erros
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).render('error', { error: 'Algo deu errado!' });
+});
 
-  // Start server
-  const PORT = process.env.APP_PORT || 3000;
-  app.listen(PORT, () => {
-    logger.info(`Server running on port ${PORT}`);
-    logger.info(`Environment: ${process.env.APP_ENV}`);
-  });
-}
-
-
-
-
-
+// Iniciar servidor
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+});
